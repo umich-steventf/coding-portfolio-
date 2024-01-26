@@ -1,0 +1,35 @@
+# Vars
+$ver = "1.0"
+$BillingHome = "C:\ProgramData\BioPhysics\SmartLab\data\"
+$BillingFile = "$($BillingHome)smartlab_billing.log"
+$AdminUser = "hoffj"
+
+# Check for billing directory, if not found create directory
+	If (!(Test-Path "$($BillingHome)")) {
+		New-Item "$($BillingHome)" -Type Directory
+		$ACL = Get-ACL "$($BillingHome)"
+		$Rule = New-Object System.Security.AccessControl.FileSystemAccessRule("Users","Modify", "ContainerInherit, ObjectInherit", "None", "Allow")
+		$ACL.AddAccessRule($Rule)
+		Set-ACL "$($BillingHome)" $ACL
+	}
+
+# Check for data file, if not found create a new file
+If (!(Test-Path "$($BillingFile)")) { New-Item "$($BillingFile)" -Type File }
+
+# Update data file with log off information
+$Smartlab_SID = [Environment]::GetEnvironmentVariable("SmartLab_SID","User")
+$Smartlab_User = [Environment]::GetEnvironmentVariable("SmartLab_User","User")
+$Smartlab_PI = [Environment]::GetEnvironmentVariable("SmartLab_PI","User")
+$Smartlab_Shortcode = [Environment]::GetEnvironmentVariable("SmartLab_Shortcode","User")
+
+# Only update log if user is not in ADMIN mode
+If ($SmartLab_User -ne "ADMIN") {
+	# Add User billing info to data file
+	Add-Content "$($BillingFile)" "$(Get-Date),$($Smartlab_SID),$($Smartlab_User),$($Smartlab_Shortcode),$($Smartlab_PI),LOGOFF"
+}
+
+# Clear windows user session billing data
+[Environment]::SetEnvironmentVariable("SmartLab_SID", "$Null", "User")
+[Environment]::SetEnvironmentVariable("SmartLab_User", "$Null", "User")
+[Environment]::SetEnvironmentVariable("SmartLab_PI", "$Null", "User")
+[Environment]::SetEnvironmentVariable("SmartLab_Shortcode", "$Null", "User")

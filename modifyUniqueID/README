@@ -1,0 +1,4 @@
+in a terminal run: ./modifyUniqueID.sh
+
+if you are not in an elevated window, the terminal will remind you to elevate.
+--> for permissions to apply, you must be in an elevated window
